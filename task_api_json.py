@@ -5,14 +5,36 @@ app = FastAPI(title="Простой CRUD с JSON")
 
 DATA_FILE = 'users.json'
 
+def load_users():
+    return json.load(open(DATA_FILE, 'r', encoding='utf-8'))
+
 @app.get("/")
 def home():
     """Главная страница"""
     return {"сообщение": "Простой CRUD API", "документация": "/docs"}
 
+@app.get("/users")
+def get_users():
+    """Возвращает список пользователей"""   
+    return load_users()
 
+@app.get("/users/{user_id}")
+def get_user(user_id: int):
+    """Возвращает пользователя по ID"""  
+    users = load_users()
+    for user in users:
+        if user['id'] == user_id:
+            return user
+    return {"error": "Пользователь не найден"}
 
-
+@app.post("/users")
+def create_user(user: dict):
+    """Создает нового пользователя"""
+    users = load_users()
+    user['id'] = len(users) + 1
+    users.append(user)
+    save_users(users)
+    return user
 
 def save_users(users):
     """Сохраняет пользователей в JSON файл"""
